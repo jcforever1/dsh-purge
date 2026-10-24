@@ -1,0 +1,71 @@
+{
+  "format": 1,
+  "title": "dsh-purge",
+  "description": {
+    "en": "DeepSeek Harness 破甲：让所有模型都能破甲，不同模型可换不同提示词；默认提示词面向国模「小码酱」。Jailbreak for every model — swap prompts per model. 求 Star 收藏 ⭐ 如要二开，请查看署名要求部分",
+    "zh": "DeepSeek Harness 破甲：让所有模型都能破甲，不同模型可换不同提示词；默认提示词面向国模「小码酱」。Jailbreak for every model — swap prompts per model. 求 Star 收藏 ⭐ 如要二开，请查看署名要求部分"
+  },
+  "metadata": {
+    "categories": {
+      "general": {
+        "title": {
+          "en": "General",
+          "zh": "通用"
+        }
+      }
+    },
+    "labels": {},
+    "sortKeys": {}
+  },
+  "plugins": [
+    {
+      "name": "dsh-purge",
+      "title": {
+        "en": "dsh-purge",
+        "zh": "dsh-purge"
+      },
+      "description": {
+        "en": "DeepSeek Harness 破甲：让所有模型都能破甲，不同模型可换不同提示词；默认提示词面向国模「小码酱」。Jailbreak for every model — swap prompts per model. 求 Star 收藏 ⭐ 如要二开，请查看署名要求部分",
+        "zh": "DeepSeek Harness 破甲：让所有模型都能破甲，不同模型可换不同提示词；默认提示词面向国模「小码酱」。Jailbreak for every model — swap prompts per model. 求 Star 收藏 ⭐ 如要二开，请查看署名要求部分"
+      },
+      "author": "YuJunZhiXue",
+      "icon": "https://raw.githubusercontent.com/YuJunZhiXue/dsh-purge/master/docs/banner.svg",
+      "homepage": "https://github.com/YuJunZhiXue/dsh-purge#readme",
+      "repository": {
+        "url": "https://github.com/YuJunZhiXue/dsh-purge"
+      },
+      "metadata": {
+        "category": "general",
+        "keywords": [
+          "dsh",
+          "plugin",
+          "dsh-plugin",
+          "dsh-plugins",
+          "网络安全",
+          "红队评测",
+          "llm-security",
+          "harness-security",
+          "deepseek-harness",
+          "red-team",
+          "instructions",
+          "rules"
+        ],
+        "labels": []
+      },
+      "versions": [
+        {
+          "version": "1.1.77",
+          "publishTimestamp": 1792819603,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/jcforever1/dsh-purge",
+            "commit": "1732eed6b0cdeb5a5e7353fdc013e19226fca54e"
+          },
+          "engines": {
+            "dsh": ">=0.2.1-rc.2"
+          }
+        }
+      ]
+    }
+  ]
+}
