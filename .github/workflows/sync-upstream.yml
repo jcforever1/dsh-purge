@@ -1,0 +1,89 @@
+name: Sync upstream
+
+# Pulls upstream YuJunZhiXue/dsh-purge into this mirror, re-applies the mirror's single code
+# change (the `postinstall` entry is removed, see MIRROR.md), regenerates the market index, and
+# commits the result. Nothing is pushed unless every step succeeds, so a failed run leaves the
+# published mirror exactly as it was.
+
+on:
+  schedule:
+    - cron: '41 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch upstream master
+        run: |
+          git remote add upstream https://github.com/YuJunZhiXue/dsh-purge.git 2>/dev/null || true
+          git fetch --depth=1 upstream master
+          echo "upstream HEAD: $(git rev-parse FETCH_HEAD)"
+
+      - name: Copy the upstream tree
+        run: |
+          # Everything upstream ships, except the files this mirror owns.
+          git checkout FETCH_HEAD -- . \
+            ':(exclude)index.json' \
+            ':(exclude)make-index.mjs' \
+            ':(exclude)MIRROR.md' \
+            ':(exclude)mirror-notice.md' \
+            ':(exclude)README.md' \
+            ':(exclude)README.zh-CN.md' \
+            ':(exclude).github'
+
+      - name: Re-apply the mirror's change to the manifest
+        run: |
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            if (pkg.scripts && pkg.scripts.postinstall) {
+              delete pkg.scripts.postinstall;
+              fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+              console.log('removed the postinstall entry');
+            } else {
+              console.log('no postinstall entry to remove');
+            }
+          "
+
+      - name: Refresh the READMEs from upstream and restore the mirror notice
+        run: |
+          git checkout FETCH_HEAD -- README.md README.zh-CN.md
+          for f in README.md README.zh-CN.md; do
+            cat mirror-notice.md "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+          done
+
+      - name: Install the validator DSH ships
+        run: npm install --no-audit --no-fund --no-save @deepseek-ai/dsh-plugin-market-index@0.2.1-rc.2 semver
+
+      - name: Regenerate and validate the market index
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node make-index.mjs --repo jcforever1/dsh-purge --ref master --out index.json
+
+      - name: Commit the synced tree
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'already in sync with upstream'
+          else
+            git commit -m 'chore: sync upstream master'
+            git push
+          fi

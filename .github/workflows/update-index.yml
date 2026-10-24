@@ -1,0 +1,53 @@
+name: Update market index
+
+# Regenerates index.json — the DSH plugin market index (format 1) served from this repository's
+# raw URL — and commits it. The index pins one commit of this repository, so a market install
+# lands on exactly one tree.
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'make-index.mjs'
+      - 'package.json'
+      - '.github/workflows/update-index.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-index
+  cancel-in-progress: false
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install the validator DSH ships
+        run: npm install --no-audit --no-fund --no-save @deepseek-ai/dsh-plugin-market-index@0.2.1-rc.2 semver
+
+      - name: Generate and validate the index
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node make-index.mjs --repo jcforever1/dsh-purge --ref master --out index.json
+
+      - name: Commit the refreshed index
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.json
+          if git diff --cached --quiet; then
+            echo 'index.json is already current'
+          else
+            git commit -m 'chore: refresh market index'
+            git push
+          fi
