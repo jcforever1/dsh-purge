@@ -23,7 +23,9 @@ The upstream NOTICE requires that derivative works retain the NOTICE and attribu
 Commercial use, resale, and whitelabelling are not granted here. The upstream author sells those
 separately — see upstream's `LICENSE-COMMERCIAL.md`.
 
-## The one change to the code
+## The changes to the code
+
+### 1. No `postinstall`
 
 `package.json` no longer declares:
 
@@ -61,6 +63,25 @@ run the script once by hand:
 ```bash
 node <profile>/node_modules/dsh-purge/scripts/ensure-profile-bundle.mjs
 ```
+
+### 2. Atomic writes keep the target's file mode
+
+`atomicWriteSync` and `atomicWriteFile` write to a temporary file and rename it over the target.
+A new file is created with the default mode `0644`, so the rename silently stripped the
+original's permissions.
+
+That broke the official CLI launcher: `resources/runtime/cli/bin/dsh` shipped as `0755`, and
+after one write it became `0644` — `dsh` then failed with `Permission denied`. The fix records
+the target's mode before writing and applies it to the temporary file before the rename.
+
+### 3. The status no longer reports a patched desktop CLI as `original`
+
+On the desktop surface the plugin patches the official CLI launcher with the
+`dsh-purge cli entry` block (an entry fallback that survives the archive being unpacked), not
+with the `dsh-purge shim` inject that the shim patcher writes. The status reporter only looked
+for the shim marker, so a correctly patched launcher was reported as `original` — which reads
+as "the CLI is not fixed" and sends people looking for a problem that is not there. The desktop
+branch now also accepts the entry-block marker.
 
 ## The market index
 

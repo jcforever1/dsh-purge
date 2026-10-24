@@ -1,9 +1,14 @@
 name: Sync upstream
 
-# Pulls upstream YuJunZhiXue/dsh-purge into this mirror, re-applies the mirror's single code
-# change (the `postinstall` entry is removed, see MIRROR.md), regenerates the market index, and
-# commits the result. Nothing is pushed unless every step succeeds, so a failed run leaves the
-# published mirror exactly as it was.
+# Pulls upstream YuJunZhiXue/dsh-purge into this mirror, re-applies the mirror's own changes,
+# regenerates the market index, and commits the result. Nothing is pushed unless every step
+# succeeds, so a failed run leaves the published mirror exactly as it was.
+#
+# The mirror's own changes live in two places:
+#   - package.json: the `postinstall` entry is removed (a script, so it is re-applied by step).
+#   - mirror/local-changes.patch: the mirror's source edits, as a patch against upstream's code.
+#     It is re-applied after the tree copy and regenerated from the result, so it stays
+#     correct as upstream moves.
 
 on:
   schedule:
@@ -45,7 +50,17 @@ jobs:
             ':(exclude)mirror-notice.md' \
             ':(exclude)README.md' \
             ':(exclude)README.zh-CN.md' \
-            ':(exclude).github'
+            ':(exclude).github' \
+            ':(exclude)mirror'
+
+      - name: Re-apply the mirror's source changes
+        run: |
+          if [ -s mirror/local-changes.patch ]; then
+            git apply --3way --whitespace=nowarn mirror/local-changes.patch
+            echo "mirror changes re-applied"
+          else
+            echo "no local changes to re-apply"
+          fi
 
       - name: Re-apply the mirror's change to the manifest
         run: |
@@ -67,6 +82,11 @@ jobs:
           for f in README.md README.zh-CN.md; do
             cat mirror-notice.md "$f" > "$f.tmp" && mv "$f.tmp" "$f"
           done
+
+      - name: Regenerate the mirror's own change patch
+        run: |
+          git diff FETCH_HEAD -- lib/ > mirror/local-changes.patch
+          echo "mirror/local-changes.patch regenerated ($(grep -c '^diff --git' mirror/local-changes.patch) files)"
 
       - name: Install the validator DSH ships
         run: npm install --no-audit --no-fund --no-save @deepseek-ai/dsh-plugin-market-index@0.2.1-rc.2 semver
