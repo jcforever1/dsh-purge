@@ -91,7 +91,7 @@ jobs:
         run: |
           # Keep the patch only while the mirror really carries code that upstream does not.
           mkdir -p mirror
-          git diff FETCH_HEAD -- lib/ > mirror/local-changes.patch
+          git diff FETCH_HEAD -- lib/ bin/ > mirror/local-changes.patch
           if [ -s mirror/local-changes.patch ]; then
             echo "mirror/local-changes.patch regenerated ($(grep -c '^diff --git' mirror/local-changes.patch) files)"
           else
