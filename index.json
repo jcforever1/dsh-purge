@@ -55,11 +55,11 @@
       "versions": [
         {
           "version": "1.1.78",
-          "publishTimestamp": 1792915661,
+          "publishTimestamp": 1792991784,
           "source": {
             "type": "git",
             "url": "https://github.com/jcforever1/dsh-purge",
-            "commit": "37caede40d81eb48a25a68c2fc8225c8cd1ee6ee"
+            "commit": "0030e961ebf09a5b0d1b70ef295bbebd41965967"
           },
           "engines": {
             "dsh": ">=0.2.1-rc.2"
