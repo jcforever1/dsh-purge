@@ -1,5 +1,5 @@
 diff --git a/bin/dsh-purge.js b/bin/dsh-purge.js
-index a6f5c30..5f97bbf 100755
+index 4186b57..cc983e0 100755
 --- a/bin/dsh-purge.js
 +++ b/bin/dsh-purge.js
 @@ -2,6 +2,17 @@
